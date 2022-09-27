@@ -4,7 +4,9 @@ Basically it's a lightweight version of JQuery but with some differences
 
 ## Usage
 Almost all methods return the this element allowing you to link many methods together for example:
-    $("div").html("hello world").css({color: "red"}).appendTo(document.body)
+```js
+$("div").html("hello world").css({color: "red"}).appendTo(document.body)
+```
 
 ### Selecting element by id
     var el = $("#id")
