@@ -1,6 +1,6 @@
 # Barbequery
 The perfect library for easily cooking up some spicy HTML GUIs. 
-Basically it's a lightweight version of JQuery but with some differences
+Basically it's a lightweight (only 2% of JQuery's filesize!) version of JQuery but with some changes.
 
 ## Usage
 Almost all methods return the this element allowing you to link many methods together for example:
