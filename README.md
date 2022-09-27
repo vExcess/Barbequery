@@ -3,8 +3,11 @@
 
 ## Reasons to use
 ☁️ It's very lightweight being only 2% as big as both JQuery and React
+
 ⚡ It's lightning fast
+
 🧠 It's is extremely simple to use, especially if you are already familiar with JQuery or React
+
 ✨ It's modern using ES6+ JavaScript syntax
 
 ## Usage
