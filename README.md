@@ -1,6 +1,11 @@
 # Barbequery
-The perfect library for easily cooking up some spicy HTML GUIs. 
-Basically it's a lightweight (only 2% of JQuery's filesize!) version of JQuery but with some changes.
+🔥 The perfect library/framework for easily cooking up some spicy HTML GUIs
+
+## Reasons to use
+☁️ It's very lightweight being only 2% as big as both JQuery and React
+⚡ It's lightning fast
+🧠 It's is extremely simple to use, especially if you are already familiar with JQuery or React
+✨ It's modern using ES6+ JavaScript syntax
 
 ## Usage
 Almost all methods return the this element allowing you to link many methods together for example:
@@ -25,6 +30,8 @@ var el = $("div", "Hello World", {color: "red"}) // create an element of a nativ
 ```
 
 ### Creating components
+Use `\{propertyName}` to insert a value from the object parameter which is used when creating an instance of a component
+The `$.html` is necessary if you are going to use value inserts, otherwise it is not necessary
 ```js
 var exampleComponent = $.createComponent("MyComponent", $.html`
     <p style="border: 1px solid green;">
@@ -73,7 +80,7 @@ el.css(`
 })
 ```
 
-### Appending this element to another
+### Appending this element to another element
 ```js
 el.appendTo(document.body)
 ```
