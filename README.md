@@ -2,7 +2,7 @@
 🔥 The perfect library/framework for easily cooking up some spicy HTML GUIs
 
 ## Reasons to use
-☁️ Barbequery was specifically designed to be very lightweight (only 2% of JQuery's file size)
+☁️ Barbequery was specifically designed to be very lightweight (only 3% of JQuery's file size)
 
 ⚡ It's lightning fast
 
