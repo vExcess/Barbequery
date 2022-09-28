@@ -4,23 +4,23 @@
     }
     
     Object.assign(Element.prototype, {
-        appendTo: function (a) {
+        appendTo(a) {
             a.appendChild(this);
             return this;
         },
-        addClass: function (...args) {
+        addClass(...args) {
             this.classList.add(...args);
             return this;
         },
-        removeClass: function (...args) {
+        removeClass(...args) {
             this.classList.remove(...args);
             return this;
         },
-        setId: function (a) {
+        setId(a) {
             this.id = a;
             return this;
         },
-        html: function (a) {
+        html(a) {
             if (a === undefined) {
                 return this.innerHTML;
             }
@@ -28,7 +28,7 @@
             this.innerHTML = a;
             return this;
         },
-        text: function (a) {
+        text(a) {
             if (a === undefined) {
                 return this.innerText;
             }
@@ -36,18 +36,17 @@
             this.innerText = a;
             return this;
         },
-        on: function (a, b, c) {
+        on(a, b, c) {
             this.addEventListener(a, b, c);
             return this;
         },
-        css: function (c) {
+        css(c) {
             if (typeof c === "string") {
-                c.split(";").forEach(s => {
-                    s = s.split(":");
-                    if (s.length > 1) {
-                        this.style[s[0].trim()] = s[1].trim();
-                    }
-                });
+                let m;
+                let r = /([\w-]*)\s*:\s*([^;]*)/g;
+                while(m = r.exec(c)) {
+                    this.style[m[1]] = m[2].trim();
+                }
             } else if (typeof c === "object") {
                 for (let p in c) {
                     this.style[p] = c[p];
@@ -55,7 +54,7 @@
             }
             return this;
         },
-        attr: function (a, b) {
+        attr(a, b) {
             if (b === undefined) {
                 for (let p in a) {
                     this[p] = a[p];
@@ -65,71 +64,81 @@
             }
             return this;
         },
-        append: function (a) {
+        append(a) {
             this.append_(a);
             return this;
         }
     });
     
-    function doEl (e, b, c) {
-        if (b) {
-            e.html(b);
-        }
-        if (c) {
-            e.css(c);
-        }
-        return e;
-    }
-    
-    let B = function (a, b, c) {
-        let o;
+    let B = (a, b, c) => {
+        let el;
         if (a.charAt(0) === "#") {
-            o = doEl(document.getElementById(a.slice(1)), b, c);
+            el = document.getElementById(a.slice(1));
         } else if (a.charAt(0) === ".") {
-            o = document.getElementsByClassName(a.slice(1), b, c);
-            o.forEach(e => doEl(e));
+            el = document.getElementsByClassName(a.slice(1), b, c);
         } else {
-            let d = B.components;
+            let components = B.components;
             // does the component exist?   
-            if (d[a]) {
-                o = document.createElement("div");
-                o.html(B.template(d[a], b, true));
-                o = o.children[0];
+            if (components[a]) {
+                el = document.createElement("div");
+                let code = B.template(components[a], b, true);
+                for (let comp in components) {
+                    let compIdx = code.indexOf("<" + comp);
+                    while (compIdx > -1) {
+                        let j = compIdx;
+                        while (code.charAt(j) !== ">" && j < code.length) {
+                            j++;
+                        }
+                        let inputData = code.slice(compIdx, j);
+                        inputData = inputData.slice(inputData.indexOf(" "));
+                        let inputObj = {};
+                        let m;
+                        let r = /([\w-]*)\s*=\s*([^ ]*)/g;
+                        while(m = r.exec(inputData)) {
+                            inputObj[m[1]] = m[2].trim();
+                            inputObj[m[1]] = inputObj[m[1]].slice(1, inputObj[m[1]].length - 1);
+                        }
+                        code =  code.slice(0, compIdx) + 
+                                B("div").append(B(comp, inputObj)).html() +
+                                code.slice(j + 1);
+                        compIdx = code.indexOf("<" + comp);
+                    }
+                }
+                el.html(code);
+                el = el.children[0];
             } else {
-                o = doEl(document.createElement(a), b, c);
+                el = document.createElement(a);
             }
         }
-        return o;
+        return el;
     };
     
     B.html = String.raw;
     
-    B.template = function (a, b, c) {
-        // a is string
-        // b is object
-        var s = "";
-        var i = 0;
-        var e = c ? "\\" : "$"; // template escape char
-        var c;
-        while (i < a.length) {
-            c = a.charAt(i);
-            if (c === e && a.charAt(i + 1) === "{") {
-                var n = "";
+    B.template = (str, obj, useBackSlash) => {
+        let newStr = "";
+        let i = 0;
+        let escapeChar = useBackSlash ? "\\" : "$";
+        let currChar;
+        while (i < str.length) {
+            currChar = str.charAt(i);
+            if (currChar === escapeChar && str.charAt(i + 1) === "{") {
+                let name = "";
                 i += 2;
-                while (a.charAt(i) !== "}" && i < a.length) {
-                    n += a.charAt(i);
+                while (str.charAt(i) !== "}" && i < str.length) {
+                    name += str.charAt(i);
                     i++;
                 }
-                s += b[n];
+                newStr += obj[name];
             } else {
-                s += c;
+                newStr += currChar;
             }
             i++;
         }
-        return s;
+        return newStr;
     }
     
-    B.getJSON = function (url, callback) {
+    B.getJSON = (url, callback) => {
         let prom = fetch(url).then(res => res.json());
     
         if (callback === undefined) {
@@ -142,7 +151,7 @@
         }
     };
     
-    B.getJSONLegacy = function (url, callback) {
+    B.getJSONLegacy = (url, callback) => {
         let callbackId = Math.random().toString().replace(".", "");
         let script = document.createElement("script");
         B.getJSON["c" + callbackId] = function (json) {
@@ -155,15 +164,13 @@
     
     B.components = {};
     
-    B.createComponent = function (a, b) {
-        B.components[a] = b;
-        return function (b) {
-            return B(a, b);
-        };
+    B.createComponent = (name, code) => {
+        B.components[name] = code;
+        return options => B(name, options);
     };
     
-    B.deleteComponent = function (a) {
-        delete B.components[a];
+    B.deleteComponent = name => {
+        delete B.components[name];
     };
     
     window.$ = B;
