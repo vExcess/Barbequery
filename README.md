@@ -60,8 +60,9 @@ $.deleteComponent("MyComponent")
 
 ### Using components
 ```js
-var el = $("MyComponent", {name: "Bob"}) // create a custom component using $
-var el = exampleComponent({name: "Bob"}); // create a custom element using the function that is returned from the createComponent method
+var el = $("MyComponent", {name: "bob", job: "lawyer"}) // create a custom component using $
+var el = exampleComponent({name: "bob", job: "lawyer"}); // create a custom element using the function that is returned from the createComponent method
+var el = $("ParentComponent").appendTo(document.body) // create a custom component that uses sub-components
 ```
 
 ### Setting HTML
