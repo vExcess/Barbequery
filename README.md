@@ -37,9 +37,10 @@ Use `\{propertyName}` to insert a value from the object parameter which is used 
 The `$.html` is necessary if you are going to use value inserts, otherwise it is not necessary
 ```js
 var exampleComponent = $.createComponent("MyComponent", $.html`
-    <p style="border: 1px solid green;">
-        <strong>Hello:</strong>
-        <span>\{name} is \n the \h  best</span>
+    <p style="border: 2px solid green;">
+        <strong>NAME: \{name}</strong>
+        <br>
+        <span>job: \{job} \n \t example</span>
     </p>
 `)
 
@@ -47,7 +48,7 @@ var exampleComponent = $.createComponent("MyComponent", $.html`
 // you can give input to those components in the opening tag of the component
 $.createComponent("ParentComponent", $.html`
     <div style="border: 2px solid blue;">
-        <MyComponent name="Tom" job="none">
+        <MyComponent name="Tom" job="unemployed">
         <MyComponent/>
     </div>
 `)
