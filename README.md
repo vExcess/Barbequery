@@ -42,6 +42,15 @@ var exampleComponent = $.createComponent("MyComponent", $.html`
         <span>\{name} is \n the \h  best</span>
     </p>
 `)
+
+// you can also create new components that use previously defined components
+// you can give input to those components in the opening tag of the component
+$.createComponent("ParentComponent", $.html`
+    <div style="border: 2px solid blue;">
+        <MyComponent name="Tom" job="none">
+        <MyComponent/>
+    </div>
+`)
 ```
     
 ### Deleting components (note: deletes the component type, not individual components)
