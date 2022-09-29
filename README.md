@@ -1,5 +1,5 @@
 # Barbequery
-🔥 The perfect library/framework for easily cooking up some spicy HTML GUIs
+🔥 The perfect library for easily cooking up some spicy HTML GUIs
 
 ## Reasons to use
 ☁️ Barbequery was specifically designed to be very lightweight (only 3% of JQuery's file size)
