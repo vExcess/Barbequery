@@ -47,7 +47,7 @@
                 while(m = r.exec(c)) {
                     this.style[m[1]] = m[2].trim();
                 }
-            } else if (typeof c === "object") {
+            } else {
                 for (let p in c) {
                     this.style[p] = c[p];
                 }
@@ -81,14 +81,27 @@
             // does the component exist?   
             if (components[a]) {
                 el = document.createElement("div");
-                let code = B.template(components[a], b, true);
-                for (let comp in components) {
-                    let compIdx = code.indexOf("<" + comp);
-                    while (compIdx > -1) {
-                        let j = compIdx;
-                        while (code.charAt(j) !== ">" && j < code.length) {
-                            j++;
+                let componentCode = components[a];
+                if (b && (b.id || b.class)) {
+                    let openTagIdx = B.noStringIdxOf(componentCode, "<");
+                    let spaceIdx = openTagIdx + componentCode.slice(openTagIdx).indexOf(" ");
+                    if (b.id) {
+                        componentCode = componentCode.slice(0, spaceIdx) + ` id="${b.id}"` + componentCode.slice(spaceIdx);
+                    }
+                    if (b.class) {
+                        if (componentCode.includes("class=")) {
+                            let classIdx = B.noStringIdxOf(componentCode, "class=") + 7;
+                            componentCode = componentCode.slice(0, classIdx) + `${b.class} ` + componentCode.slice(classIdx);
+                        } else {
+                            componentCode = componentCode.slice(0, spaceIdx) + ` class="${b.class}"` + componentCode.slice(spaceIdx);
                         }
+                    }
+                }
+                let code = B.template(componentCode, b, true);
+                for (let comp in components) {
+                    let compIdx = B.noStringIdxOf(code, "<" + comp);
+                    while (compIdx > -1) {
+                        let j = B.noStringIdxOf(code, ">", compIdx);
                         let inputData = code.slice(compIdx, j);
                         inputData = inputData.slice(inputData.indexOf(" "));
                         let inputObj = {};
@@ -98,10 +111,12 @@
                             inputObj[m[1]] = m[2].trim();
                             inputObj[m[1]] = inputObj[m[1]].slice(1, inputObj[m[1]].length - 1);
                         }
+                        // console.log(inputObj)
+                        
                         code =  code.slice(0, compIdx) + 
                                 B("div").append(B(comp, inputObj)).html() +
                                 code.slice(j + 1);
-                        compIdx = code.indexOf("<" + comp);
+                        compIdx = B.noStringIdxOf(code, "<" + comp);
                     }
                 }
                 el.html(code);
@@ -114,6 +129,28 @@
     };
     
     B.html = String.raw;
+
+    B.noStringIdxOf = (str, targetStr, start) => {
+        let i = start || 0, inString = false, strType = "", strTypes = ['"', "'", "`"];
+        while (i < str.length) {
+            let c = str.charAt(i);
+            if (strTypes.includes(c)) {
+                if (inString) {
+                    if (c === strType) {
+                        inString = false;
+                    }
+                } else {
+                    inString = true;
+                    strType = c;
+                }
+            }
+            if (str.slice(i, i + targetStr.length) === targetStr && !inString) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
     
     B.template = (str, obj, useBackSlash) => {
         let newStr = "";
@@ -169,8 +206,10 @@
         return options => B(name, options);
     };
     
-    B.deleteComponent = name => {
-        delete B.components[name];
+    B.deleteComponent = (...args) => {
+        for (var i = 0; i < args.length; i++) {
+            delete B.components[args[i]];
+        }
     };
     
     window.$ = B;
