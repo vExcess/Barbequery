@@ -188,7 +188,7 @@
         }
     };
     
-    B.getJSONLegacy = (url, callback) => {
+    B.getJSONP = (url, callback) => {
         let callbackId = Math.random().toString().replace(".", "");
         let script = document.createElement("script");
         B.getJSON["c" + callbackId] = function (json) {
