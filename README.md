@@ -1,8 +1,8 @@
 # Barbequery
 🔥 The perfect library for easily cooking up some spicy HTML GUIs
 
-## Reasons to use
-☁️ Barbequery was specifically designed to be very lightweight (only 3% of JQuery's file size)
+## Reasons to use Barbequery
+☁️ It's specifically designed to be very lightweight (only 3% of JQuery's file size)
 
 ⚡ It's lightning fast
 
@@ -29,7 +29,6 @@ var els = $(".class-name")
 ### Creating elements
 ```js
 var el = $("div") // create an element of a native type
-var el = $("div", "Hello World", {color: "red"}) // create an element of a native type and setting html and css
 ```
 
 ### Creating components
