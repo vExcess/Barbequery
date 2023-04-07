@@ -3,6 +3,116 @@
         Element.prototype.append_ = Element.prototype.append;
     }
     
+    let B = (a, b, el) => {
+        let selectors = a.split(">");
+        for (var i = 0; i < selectors.length; i++) {
+            let select = selectors[i].trim();
+            let param = select.slice(1);
+            switch (select.charAt(0)) {
+                // id selector
+                case "#":
+                    if (typeof el === "object" && el.length) {
+                        let newEl = [];
+                        for (let i = 0; i < el.length; i++) {
+                            newEl.push(el.getElementById(param));
+                        }
+                        el = newEl;
+                    } else {
+                        el = (el ?? document).getElementById(param);
+                    }
+                break;
+
+                // class selector
+                case ".":
+                    if (typeof el === "object" && el.length) {
+                        let newEl = [];
+                        for (let i = 0; i < el.length; i++) {
+                            let res = el[i].getElementsByClassName(param);
+                            for (let j = 0; j < res.length; j++) {
+                                newEl.push(res[j]);
+                            }
+                        }
+                        el = newEl;
+                    } else {
+                        el = (el ?? document).getElementsByClassName(param);
+                    }
+                break;
+
+                // element selector
+                case "*":
+                    if (typeof el === "object" && el.length) {
+                        let newEl = [];
+                        for (let i = 0; i < el.length; i++) {
+                            let res = el[i].getElementsByTagName(param);
+                            for (let j = 0; j < res.length; j++) {
+                                newEl.push(res[j]);
+                            }
+                        }
+                        el = newEl;
+                    } else {
+                        el = (el ?? document).getElementsByTagName(param);
+                    }
+                break;
+
+                default:
+                    let components = B.components;
+                    // does the component exist?   
+                    if (components[select]) {
+                        el = document.createElement("div");
+                        let componentCode = components[select];
+        
+                        // set id and class if given
+                        if (b && (b.id || b.class)) {
+                            let openTagIdx = B.noStringIdxOf(componentCode, "<");
+                            let spaceIdx = openTagIdx + componentCode.slice(openTagIdx).indexOf(" ");
+                            if (b.id) {
+                                componentCode = componentCode.slice(0, spaceIdx) + ` id="${b.id}"` + componentCode.slice(spaceIdx);
+                            }
+                            if (b.class) {
+                                if (componentCode.includes("class=")) {
+                                    let classIdx = B.noStringIdxOf(componentCode, "class=") + 7;
+                                    componentCode = componentCode.slice(0, classIdx) + `${b.class} ` + componentCode.slice(classIdx);
+                                } else {
+                                    componentCode = componentCode.slice(0, spaceIdx) + ` class="${b.class}"` + componentCode.slice(spaceIdx);
+                                }
+                            }
+                        }
+                        
+                        let code = B.template(componentCode, b, "\\");
+                        
+                        for (let comp in components) {
+                            let compIdx = B.noStringIdxOf(code, "<" + comp);
+                            while (compIdx > -1) {
+                                let j = B.noStringIdxOf(code, ">", compIdx);
+                                let inputData = code.slice(compIdx, j);
+                                inputData = inputData.slice(inputData.indexOf(" "));
+                                let inputObj = {};
+                                let m;
+                                let r = /([\w-]*)\s*=\s*([^ ]*)/g;
+                                while(m = r.exec(inputData)) {
+                                    inputObj[m[1]] = m[2].trim();
+                                    inputObj[m[1]] = inputObj[m[1]].slice(1, inputObj[m[1]].length - 1);
+                                }
+                                
+                                code =  code.slice(0, compIdx) + 
+                                        B("div").append(B(comp, inputObj)).html() +
+                                        code.slice(j + 1);
+                                compIdx = B.noStringIdxOf(code, "<" + comp);
+                            }
+                        }
+                        
+                        el.html(code);
+                        el = el.children[0];
+                    } else {
+                        el = document.createElement(select);
+                    }
+                break;
+            }
+        }
+        
+        return el;
+    };
+
     Object.assign(Element.prototype, {
         appendTo(a) {
             a.appendChild(this);
@@ -64,72 +174,14 @@
             }
             return this;
         },
-        append(a) {
-            this.append_(a);
+        append(...args) {
+            this.append_(...args);
             return this;
+        },
+        $(a, b) {
+            return B(a, b, this);
         }
     });
-    
-    let B = (a, b, c) => {
-        let el;
-        if (a.charAt(0) === "#") {
-            el = document.getElementById(a.slice(1));
-        } else if (a.charAt(0) === ".") {
-            el = document.getElementsByClassName(a.slice(1), b, c);
-        } else {
-            let components = B.components;
-            // does the component exist?   
-            if (components[a]) {
-                el = document.createElement("div");
-                let componentCode = components[a];
-
-                // set id and class if given
-                if (b && (b.id || b.class)) {
-                    let openTagIdx = B.noStringIdxOf(componentCode, "<");
-                    let spaceIdx = openTagIdx + componentCode.slice(openTagIdx).indexOf(" ");
-                    if (b.id) {
-                        componentCode = componentCode.slice(0, spaceIdx) + ` id="${b.id}"` + componentCode.slice(spaceIdx);
-                    }
-                    if (b.class) {
-                        if (componentCode.includes("class=")) {
-                            let classIdx = B.noStringIdxOf(componentCode, "class=") + 7;
-                            componentCode = componentCode.slice(0, classIdx) + `${b.class} ` + componentCode.slice(classIdx);
-                        } else {
-                            componentCode = componentCode.slice(0, spaceIdx) + ` class="${b.class}"` + componentCode.slice(spaceIdx);
-                        }
-                    }
-                }
-                
-                let code = B.template(componentCode, b, true);
-                for (let comp in components) {
-                    let compIdx = B.noStringIdxOf(code, "<" + comp);
-                    while (compIdx > -1) {
-                        let j = B.noStringIdxOf(code, ">", compIdx);
-                        let inputData = code.slice(compIdx, j);
-                        inputData = inputData.slice(inputData.indexOf(" "));
-                        let inputObj = {};
-                        let m;
-                        let r = /([\w-]*)\s*=\s*([^ ]*)/g;
-                        while(m = r.exec(inputData)) {
-                            inputObj[m[1]] = m[2].trim();
-                            inputObj[m[1]] = inputObj[m[1]].slice(1, inputObj[m[1]].length - 1);
-                        }
-                        // console.log(inputObj)
-                        
-                        code =  code.slice(0, compIdx) + 
-                                B("div").append(B(comp, inputObj)).html() +
-                                code.slice(j + 1);
-                        compIdx = B.noStringIdxOf(code, "<" + comp);
-                    }
-                }
-                el.html(code);
-                el = el.children[0];
-            } else {
-                el = document.createElement(a);
-            }
-        }
-        return el;
-    };
     
     B.html = String.raw;
 
@@ -155,10 +207,10 @@
         return -1;
     }
     
-    B.template = (str, obj, useBackSlash) => {
+    B.template = (str, obj, specialChar) => {
         let newStr = "";
         let i = 0;
-        let escapeChar = useBackSlash ? "\\" : "$";
+        let escapeChar = specialChar ?? "$";
         let currChar;
         while (i < str.length) {
             currChar = str.charAt(i);
@@ -172,7 +224,14 @@
                 props = props.split(".");
                 let val = obj;
                 for (var n = 0; n < props.length; n++) {
-                    val = val[props[n]];
+                    val = val?.[props[n]];
+                }
+                if (typeof val === "string") {
+                    val = val
+                    .replaceAll("&", "&amp;")
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll('"', "&quot;");
                 }
                 newStr += val;
             } else {
