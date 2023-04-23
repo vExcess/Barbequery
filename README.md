@@ -2,37 +2,63 @@
 🔥 The perfect library for easily cooking up some spicy HTML GUIs
 
 ## Reasons to use Barbequery
-☁️ It's specifically designed to be very lightweight (only 3% of JQuery's file size)
+☁️ lightweight (only 7% of JQuery's file size)
 
-⚡ It's lightning fast
+⚡ fast (no more waiting for your JSX to compile)
 
-🧠 It's is extremely simple to use, especially if you are already familiar with JQuery or React
+🧠 extremely simple to use (especially if you familiar with JQuery or React)
 
-✨ It's modern using ES6+ JavaScript syntax
+✨ modern (ES6+ JavaScript syntax support)
 
 ## Usage
-Almost all methods return the this element allowing you to link many methods together for example:
+Almost all methods return the `this` Barbequery element allowing you to link many methods together for example:
 ```js
-$("div").html("hello world").css({color: "red"}).appendTo(document.body)
+$("div").html("hello world").css("color: red").appendTo(document.body)
 ```
 
 ### Selecting element by id
 ```js
-var el = $("#id")
+$("#id")
 ```
     
 ### Selecting elements by class name
 ```js
-var els = $(".class-name")
+$(".class-name")
+```
+
+### Selecting elements by tag name
+```js
+$("*div")
+```
+
+## Multi selectors
+```js
+// select all elements that have both the "class1" class and an id of "myId"
+$(".class1 & #myId")
+
+// select all elements that are either a <div> or have the "myClass" class
+$("*div | .myClass")
+```
+
+### Nested selectors
+```js
+// select all <a> tags that are inside of an <div> that are also inside of an element that has the "example" class
+var els = $(".example > *div > *a")
+```
+
+### Nested multi selectors
+```js
+// select all elements that have class1 or both class2 and class3 and that are also inside of a <div> element
+$("*div > .class1 | (.class2 & .class3)")
 ```
     
 ### Creating elements
 ```js
-var el = $("div") // create an element of a native type
+$("div") // create an element of a native type
 ```
 
 ### Creating components
-Use `\{propertyName}` to insert a value from the object parameter which is used when creating an instance of a component
+Lets call the object parameter which is used when creating an instance of a component the initialization object. Use `\{propertyName}` to insert a value from the initialization object into the code. You can also access subproperties from the initiliazation object like so `\{prop1.prop2}`
 The `$.html` is necessary if you are going to use value inserts, otherwise it is not necessary
 ```js
 var exampleComponent = $.createComponent("MyComponent", $.html`
@@ -41,7 +67,11 @@ var exampleComponent = $.createComponent("MyComponent", $.html`
         <br>
         <span>job: \{job} \n \t example</span>
     </p>
-`)
+`, (initObj, rawElement) => {
+    // this is the callback that gets run when the element is created
+    // args is an array containing the initialization object and the raw new element
+    console.log(this); // this references the new Barbequery element
+})
 
 // you can also create new components that use previously defined components
 // you can give input to those components in the opening tag of the component
