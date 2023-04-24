@@ -12,6 +12,7 @@ Almost all methods return the `this` Barbequery element allowing you to link man
 ```js
 $("div").html("hello world").css("color: red").appendTo(document.body)
 ```
+Most methods should be directly accessible `$("input").input` however you can also do `$("input").el.input` to access the property from the raw element
 
 ### Selecting element by id
 ```js
@@ -31,7 +32,7 @@ $("*div")
 ## Multi selectors
 ```js
 // select all elements that have both the "class1" class and an id of "myId"
-$(".class1 & #myId")
+$(".class1 && #myId")
 
 // select all elements that are either a <div> or have the "myClass" class
 $("*div || .myClass")
@@ -152,6 +153,7 @@ el.attr({width: 400})
 ```
 
 ### Adding an event listener
+Note: addEventListener doesn't work on Barbequery elements, you must use the `.on` method.
 ```js
 el.on("mouseup", function (e) {
     console.log("hello", e);
@@ -172,7 +174,7 @@ $.getJSON("https://example.com/API/endpoint", function (data) {
 
 ### Fetching a JSON response using JSONP
 ```js
-$.getJSONLegacy("https://example.com/API/endpoint", function (data) {
+$.getJSONP("https://example.com/API/endpoint", function (data) {
     console.log(data);
 });
 ```
