@@ -2,13 +2,10 @@
 🔥 The perfect library for easily cooking up some spicy HTML GUIs
 
 ## Reasons to use Barbequery
-☁️ lightweight (only 7% of JQuery's file size)
-
-⚡ fast (no more waiting for your JSX to compile)
-
-🧠 extremely simple to use (especially if you familiar with JQuery or React)
-
-✨ modern (ES6+ JavaScript syntax support)
+☁️ lightweight (only 7% of JQuery's file size)  
+⚡ fast (no more waiting for your JSX to compile)  
+🧠 extremely simple to use (especially if you familiar with JQuery or React)  
+✨ modern (ES6+ JavaScript syntax support)  
 
 ## Usage
 Almost all methods return the `this` Barbequery element allowing you to link many methods together for example:
@@ -37,7 +34,7 @@ $("*div")
 $(".class1 & #myId")
 
 // select all elements that are either a <div> or have the "myClass" class
-$("*div | .myClass")
+$("*div || .myClass")
 ```
 
 ### Nested selectors
@@ -49,7 +46,7 @@ var els = $(".example > *div > *a")
 ### Nested multi selectors
 ```js
 // select all elements that have class1 or both class2 and class3 and that are also inside of a <div> element
-$("*div > .class1 | (.class2 & .class3)")
+$("*div > .class1 || (.class2 && .class3)")
 ```
     
 ### Creating elements
@@ -58,8 +55,7 @@ $("div") // create an element of a native type
 ```
 
 ### Creating components
-Lets call the object parameter which is used when creating an instance of a component the initialization object. Use `\{propertyName}` to insert a value from the initialization object into the code. You can also access subproperties from the initiliazation object like so `\{prop1.prop2}`
-The `$.html` is necessary if you are going to use value inserts, otherwise it is not necessary
+Lets call the object parameter which is used when creating an instance of a component the initialization object. Use `\{propertyName}` to insert a value from the initialization object into the code. You can also access subproperties from the initiliazation object like so `\{prop1.prop2}`. The `$.html` is necessary if you are going to use value inserts, otherwise it is not necessary. There should only be one top level element in each component.
 ```js
 var exampleComponent = $.createComponent("MyComponent", $.html`
     <p style="border: 2px solid green;">
@@ -67,10 +63,9 @@ var exampleComponent = $.createComponent("MyComponent", $.html`
         <br>
         <span>job: \{job} \n \t example</span>
     </p>
-`, (initObj, rawElement) => {
+`, function(initObj, rawElement) {
     // this is the callback that gets run when the element is created
-    // args is an array containing the initialization object and the raw new element
-    console.log(this); // this references the new Barbequery element
+    console.log(this); // this references the new Barbequery element (note: doesn't exist if you use an arrow function)
 })
 
 // you can also create new components that use previously defined components
@@ -95,14 +90,16 @@ var el = exampleComponent({name: "bob", job: "lawyer"}); // create a custom elem
 var el = $("ParentComponent").appendTo(document.body) // create a custom component that uses sub-components
 ```
 
-### Setting HTML
+### Getting/Setting innerHTML
 ```js
-el.html("Example test")
+el.html() // returns the innerHTML
+el.html("Example test") // sets the innerHTML
 ```
 
-### Setting innerText
+### Getting/Setting textContent
 ```js
-el.text("Example test")
+el.text() // returns the textContent
+el.text("Example test") // sets the textContent
 ```
 
 ### Setting CSS
