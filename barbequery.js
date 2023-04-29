@@ -15,12 +15,12 @@
         }
     
         prependTo(a) {
-            a.el.prepend(this.el);
+            (a.el ?? a).prepend(this.el);
             return this;
         }
         
         appendTo(a) {
-            a.el.append(this.el);
+            (a.el ?? a).append(this.el);
             return this;
         }
         
@@ -57,12 +57,12 @@
         }
     
         replaceChild(a, b) {
-            this.el.replaceChild(a.el, b.el);
+            this.el.replaceChild(a.el ?? a, b.el ?? b);
             return this;
         }
     
         removeChild(a) {
-            this.el.removeChild(a.el);
+            this.el.removeChild(a.el ?? a);
             return this;
         }
         
@@ -103,7 +103,7 @@
     
         prepend(...args) {
             for (var i = 0; i < args.length; i++) {
-                args[i] = args[i].el;
+                args[i] = args[i].el ?? args[i];
             }
             this.el.prepend(...args);
             return this;
@@ -111,7 +111,7 @@
         
         append(...args) {
             for (var i = 0; i < args.length; i++) {
-                args[i] = args[i].el;
+                args[i] = args[i].el ?? args[i];
             }
             this.el.append(...args);
             return this;
@@ -126,7 +126,7 @@
         }
     
         insertBefore(newEl, refEl) {
-            this.el.insertBefore(newEl.el, refEl.el);
+            this.el.insertBefore(newEl.el ?? newEl, refEl.el ?? refEl);
             return this;
         }
     }
@@ -167,6 +167,9 @@
     function B(a, b, c) {
         // convert Element to BElement
         if (a instanceof Element) return new BElement(a);
+
+        // if already a BElement simply return it
+        if (a instanceof BElement) a;
 
         // Selection queries/create Element
         let selectors = a.split(">");
@@ -289,6 +292,8 @@
         // wrap output
         if (c instanceof Element) {
             c = new BElement(c);
+        } else if (c === null || c === undefined) {
+            return null;
         } else {
             let i, arr = new Array(c.length);
             for (i = c.length - 1; i >= 0; i--) {
