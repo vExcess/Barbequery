@@ -226,7 +226,7 @@
                     let components = B.components;
                     // does the component exist?   
                     if (components[select]) {
-                        c = document.createElement("div");
+                        c = document.createElement("template");
                         let componentCode = components[select].template;
         
                         // set id and class if given
@@ -248,35 +248,56 @@
                         
                         let code = B.template(componentCode, b, "\\");
                         
-                        for (let comp in components) {
-                            let compIdx = B.noStringIdxOf(code, "<" + comp);
+                        for (let compName in components) {
+                            // find index of component in parent component code
+                            let compIdx = B.noStringIdxOf(code, "<" + compName);
                             while (compIdx > -1) {
+                                // if there is a component, find the end of its opening tag
                                 let j = B.noStringIdxOf(code, ">", compIdx);
+                                // get content of component opening tag
                                 let inputData = code.slice(compIdx, j);
                                 inputData = inputData.slice(inputData.indexOf(" "));
-                                let inputObj = {};
-
-                                let pairs = inputData.split(";"), colonIdx, key, val;
-                                for (var i = 0; i < pairs.length; i++) {
-                                    colonIdx = pairs[i].indexOf(":");
-                                    key = pairs[i].slice(0, colonIdx).trim();
-                                    if (key.length > 0) {
-                                        val = pairs[i].slice(colonIdx + 1).trim();
-                                        inputObj[key] = val;
-                                        inputObj[key] = inputObj[key].slice(1, inputObj[m[1]].length - 1);
+                                
+                                // split content into key values pairs
+                                let chunks = inputData.split("=");
+                                let pairs = Array((chunks.length - 1) * 2);
+                                let pairsIdx = 0;
+                                pairs[pairsIdx++] = chunks[0].trim();
+                                for (var i = 1; i < chunks.length - 1; i++) {
+                                    let str = chunks[i];
+                                    let k = str.length - 2;
+                                    while (k > 0) {
+                                        if (str[k] === '"' || str[k] === "'") {
+                                            pairs[pairsIdx++] = str.slice(0, k+1).trim();
+                                            pairs[pairsIdx++] = str.slice(k+1).trim();
+                                            break;
+                                        }
+                                        k--;
                                     }
                                 }
+                                pairs[pairsIdx++] = chunks[chunks.length - 1].trim();
+
+                                // create object from key value pairs
+                                let inputObj = {};
+                                for (var i = 0; i < pairs.length; i += 2) {
+                                    inputObj[pairs[i]] = pairs[i+1].slice(1, pairs[i+1].length - 1);
+                                }
+
+                                // get html of sub component
+                                let templ = B("template");
+                                templ.content.append(B(compName, inputObj).el);
                                 
+                                // I forgot how this works, but it does
                                 code =  code.slice(0, compIdx) + 
-                                        B("div").append(B(comp, inputObj)).html() +
+                                        templ.innerHTML +
                                         code.slice(j + 1);
-                                compIdx = B.noStringIdxOf(code, "<" + comp);
+                                compIdx = B.noStringIdxOf(code, "<" + compName);
                             }
                         }
 
                         // the element
                         c.innerHTML = code;
-                        c = c.children[0];
+                        c = c.content.children[0];
 
                         // run callback
                         if (components[select].callback) {
@@ -394,7 +415,7 @@
     
     B.createComponent = (name, code, callback) => {
         B.components[name] = {
-            template: code,
+            template: code.trim(),
             callback: callback
         };
         return options => B(name, options);
