@@ -387,17 +387,19 @@
         return newStr;
     }
     
-    B.getJSON = (url, callback) => {
-        let prom = fetch(url).then(res => res.json());
-    
-        if (callback === undefined) {
-            return prom;
-        } else {
-            return prom.then(res => {
-                callback(res);
-                return res;
-            });
+    B.getJSON = async (url, callback) => {
+        let res = await fetch(url);
+        let json;
+        try {
+            json = await res.json();
+        } catch (err) {
+            json = null;
         }
+    
+        if (callback !== undefined) {
+            callback(json);
+        }
+        return json;
     };
     
     B.getJSONP = (url, callback) => {
