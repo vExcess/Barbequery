@@ -119,6 +119,7 @@ async function useTree(path, tree, data, response) {
                         }
                         case "GET": {
                             status = await useTree(path.slice(key.length), tree[key][":GET:"], data, response);
+                            console.log(status)
                             break;
                         }
                     }
@@ -170,16 +171,16 @@ class Router {
         let status = await useTree(path, this.tree, data, this.response);
 
         if (!Number.isNaN(Number(status))) {
-            this.response.statusCode = Number(status);
+            data.response.statusCode = Number(status);
         }
         
         if (status === "404") {
-            this.response.write("404 Not Found");
+            data.response.write("404 Not Found");
         } else if (status === "500") {
-            this.response.write("500 Internal Server Error");
+            data.response.write("500 Internal Server Error");
         }
         if (status !== "pending") {
-            this.response.end();
+            data.response.end();
         }
         return status;
     }
