@@ -1,9 +1,20 @@
+/**
+
+    Barbequery - a lightweight easy to use DOM library
+    All code written by Vexcess available under the MIT license (https://opensource.org/license/mit/)
+
+    TODO:
+        - implement logical query operators
+        - implement server side rendering???
+**/
+
 const fs = require("fs");
 const crypto = require("node:crypto");
 const Crypto_AES = require("crypto-js/aes");
 const Crypto_SHA256 = require("crypto-js/sha256");
 const Crypto_Base64 = require("crypto-js/enc-base64");
 const Crypto_Utf8 = require("crypto-js/enc-utf8");
+const $ = require("./barbequery");
 
 const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const numbers = "0123456789";
@@ -45,9 +56,10 @@ function parseJSON(str) {
     try {
         return JSON.parse(str);
     } catch (err) {
-        return null;
+        return undefined;
     }
 }
+
 function readJSON(path) {
     return parseJSON(fs.readFileSync(path, {
         encoding: "utf8"
@@ -119,7 +131,6 @@ async function useTree(path, tree, data, response) {
                         }
                         case "GET": {
                             status = await useTree(path.slice(key.length), tree[key][":GET:"], data, response);
-                            console.log(status)
                             break;
                         }
                     }
@@ -144,6 +155,12 @@ async function useTree(path, tree, data, response) {
         status = "500";
     }
     return status;
+}
+
+function readTemplatedHTML(path, obj) {
+    const data = fs.readFileSync(path, "utf8");
+    const newData = $.template(data, obj ?? {}, '\\');
+    return newData;
 }
 
 class Router {
@@ -190,7 +207,7 @@ class Router {
         if (forwardedFor) {
             return SHA256(AES_encrypt(forwardedFor, this.#MASTER_KEY));
         } else {
-            return null;
+            return undefined;
         }
     }
 
@@ -207,77 +224,8 @@ class Router {
     }
 }
 
-class UserManager {
-    #MASTER_KEY;
-    #db;
-    User;
-
-    constructor(masterKey, db) {
-        let that = this;
-        this.#MASTER_KEY = masterKey;
-
-        const User = class {
-            static manager = that;
-            static userKeys = ["id", "username", "password", "tokens"];
-            values = [];
-            
-            static addKeys(keys) {
-                for (let i = 0; i < keys.length; i++) {
-                    User.userKeys.push(keys[i]);
-                }
-            }
-
-            constructor(values) {
-                for (let i = 0; i < values.length; i++) {
-                    this.values.push(values[i]);
-                }
-            }
-
-            get(key) {
-                return this.values[User.userKeys.indexOf(key)];
-            }
-
-            set(key, value) {
-                this.values[User.userKeys.indexOf(key)] = value;
-            }
-        };
-        this.User = User;
-    }
-
-    createUser(username, password) {
-        let userId = genRandomToken(4) + Date.now().toString(36);
-        let userSalt = genRandomToken(16);
-        let userTok = genRandomToken(32);
-        this.#db.set(userId, userSalt);
-        return new this.User([
-            userId, // id
-            username,
-            SHA256(userSalt + password),
-            [Date.now(), AES_encrypt(userSalt + userTok, this.#MASTER_KEY)], // tokens
-        ]);
-    }
-
-    saveUser(user) {
-        let directory = "./.barbequery/users/" + user.get("id")[0].toUpperCase();
-
-        let file = "";
-        for (let i = 0; i < user.values.length; i++) {
-            file += JSON.stringify(user.values[i]) + "\n";
-        }
-
-        fs.mkdir(directory, { recursive: true }, () => {
-            fs.writeFile(
-                directory + `/${userId}.json`,
-                file,
-                () => { }
-            );
-        });
-    }
-}
-
 module.exports = {
     Router,
-    UserManager,
     SHA256,
     AES_encrypt,
     AES_decrypt,
@@ -285,4 +233,5 @@ module.exports = {
     readJSON,
     parseQuery,
     genRandomToken,
+    readTemplatedHTML
 };
