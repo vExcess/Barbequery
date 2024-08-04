@@ -740,7 +740,7 @@
     }
     
     B.createComponent = (name, code, callback) => {
-        const domTree = B.parseHTML(source);
+        const domTree = B.parseHTML(code);
         let theElement = undefined;
         for (let i = 0; i < domTree.length; i++) {
             const node = domTree[i];
